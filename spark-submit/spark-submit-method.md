@@ -148,7 +148,7 @@ kubectl logs spark-pi-dc8553776f452f56-driver | grep "Pi is roughly"
 ```
 
 ### Miscellaneous:
-These steps should work generally on any Kubernetes cluster. For instance, use [Using Spark on Kubernetes Engine to Process Data in BigQuery](https://cloud.google.com/solutions/spark-on-kubernetes-engine#configure_and_run_the_spark_application) to work with GKE clusters.
+These steps should work generally on any Kubernetes cluster. For instance, use [Using Spark on Kubernetes Engine to Process Data in BigQuery](https://cloud.google.com/solutions/spark-on-kubernetes-engine) to work with GKE clusters.
 
 > Note: if you follow the guide above there are a couple of things to keep in mind:
 >> 1. The guide uses a customized container image in order to connect to Google Cloud Storage, as it stores the jar inside a GCS bucket. Read [this blog](https://cloud.google.com/blog/products/gcp/testing-future-apache-spark-releases-and-changes-on-google-kubernetes-engine-and-cloud-dataproc) for more details on how to build the image.
