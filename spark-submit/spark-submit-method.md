@@ -1,6 +1,6 @@
 # Using spark-submit to run Spark jobs on a Kubernetes cluster
 
-To submit a spark job to an existing Kubernetes cluster, one should refer to the [Spark documentation](https://spark.apache.org/docs/latest/running-on-kubernetes.html#spark-properties), where the mechanism for scheduling with Kubernetes is described in detail. In general, 
+To submit a spark job to an existing Kubernetes cluster, one should refer to the [Spark documentation](https://spark.apache.org/docs/latest/running-on-kubernetes.html), where the mechanism for scheduling with Kubernetes is described in detail. In general, 
 - a running cluster (>=1.6), and 
 - a Docker container image containing Spark binaries (>=2.3) are required. 
 
@@ -121,7 +121,7 @@ Before submitting Spark jobs, add permissions for Spark to be able to launch job
 kubectl create clusterrolebinding user-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
 kubectl create clusterrolebinding --clusterrole=cluster-admin --serviceaccount=default:default spark-admin
 ```
-Submitting the Spark-Pi job:
+Submitting the Spark-Pi job with cluster mode (for client mode and other considerations, read the [Spark documentation](https://spark.apache.org/docs/latest/running-on-kubernetes.html)):
 ```sh
 ./bin/spark-submit \
 --deploy-mode cluster \
@@ -146,3 +146,10 @@ Check the calculated Pi value with:
 ```sh
 kubectl logs spark-pi-dc8553776f452f56-driver | grep "Pi is roughly"
 ```
+
+### Miscellaneous:
+These steps should work generally on any Kubernetes cluster. For instance, use [Using Spark on Kubernetes Engine to Process Data in BigQuery](https://cloud.google.com/solutions/spark-on-kubernetes-engine#configure_and_run_the_spark_application) to work with GKE clusters.
+
+> Note: if you follow the guide above there are a couple of things to keep in mind:
+>> 1. The guide uses a customized container image in order to connect to Google Cloud Storage, as it stores the jar inside a GCS bucket. Read [this blog](https://cloud.google.com/blog/products/gcp/testing-future-apache-spark-releases-and-changes-on-google-kubernetes-engine-and-cloud-dataproc) for more details on how to build the image.
+>> 2. While the guide works at the time of writing, you are likely to run into issues like `fabric8` bugs when using Spark 2.3.0 images on a recent version of Kubernetes cluster. To overcome you could build container images based on a later version of Spark, with GCS support or other requirements.
