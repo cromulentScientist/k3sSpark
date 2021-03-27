@@ -5,14 +5,14 @@ To submit a spark job to an existing Kubernetes cluster, one should refer to the
 - a Docker container image containing Spark binaries (>=2.3) are required. 
 
 ## Creating Docker image
-To start, download a [Spark dist](http://spark.apache.org/downloads.html/). Then use the included `docker-image-tool` to build a Docker image, e.g.:
+To start, download a [Spark dist](https://spark.apache.org/downloads.html/). Then use the included `docker-image-tool` to build a Docker image, e.g.:
 ```sh
 ./bin/docker-image-tool.sh -t <tag> build
 ```
 When finished, push the image to a repository that is accessable from the Kubernetes cluster.
 
-## Grant permissions
-To enable Spark to launch jobs in the Kubernetes cluster, use a Kubernetes service account. And create roles and role bindings to authenticate the account. For example, create a `.yaml` file:
+## Granting permissions
+To enable Spark to launch jobs in the Kubernetes cluster, use a Kubernetes service account. And create roles and role bindings to authenticate the account. For example, create a `.yaml` file like below:
 ```yaml
 apiVersion: v1
 kind: ServiceAccount
@@ -42,7 +42,7 @@ roleRef:
   name: spark-role
   apiGroup: rbac.authorization.k8s.io
 ```
-Or, instead bind roles to the default SA.
+whick can then be applied using `kubectl apply -f ./rbac.yaml`. Or, instead bind roles to the default SA.
 
 ## Submitting to cluster
 From the spark directory run `spark-submit`:
@@ -116,11 +116,14 @@ From `~/spark`, build the Spark Docker container images by:
 Alternatively you can use different dockerfiles under `kubernetes/dockerfiles/spark/bindings/` directory. Regardless this should generate two images, `spark:v3.0.1` and `spark-py:v3.0.1`. Use `docker push` to push the images to an online registry, e.g. Docker Hub.
 
 ### Submit Spark job to K3s cluster:
-Before submitting Spark jobs, add permissions for Spark to be able to launch jobs in the Kubernetes cluster. Here you can simply use the following commands to bind clusterroles to the default service account:
+Before submitting Spark jobs, add permissions for Spark to be able to launch jobs in the Kubernetes cluster. Use the `rbac.yaml` file if applicable. Otherwise, here you can simply use the following commands to bind clusterroles to the default service account, for example:
 ```sh
 kubectl create clusterrolebinding user-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
 kubectl create clusterrolebinding --clusterrole=cluster-admin --serviceaccount=default:default spark-admin
 ```
+This is a way to do it in GCP environment for GKE clusters but can be applied similarly to other clusters.  
+
+
 Submitting the Spark-Pi job with cluster mode (for client mode and other considerations, read the [Spark documentation](https://spark.apache.org/docs/latest/running-on-kubernetes.html)):
 ```sh
 ./bin/spark-submit \
@@ -128,6 +131,7 @@ Submitting the Spark-Pi job with cluster mode (for client mode and other conside
 --master  k8s://https://0.0.0.0:34177 \
 --name spark-pi \
 --conf spark.executor.instances=3 \
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=<SA-Name> \
 --conf spark.kubernetes.container.image=<image:tag> \
 --class org.apache.spark.examples.SparkPi \
 local:///opt/spark/examples/jars/spark-examples_2.12-3.0.1.jar
